@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { turso } from '../../turso';
+import { getEquiposDemo } from '@/data/equipos-demo';
 
 // Función para asegurar que la tabla exista
 async function ensureTableExists() {
@@ -247,9 +248,10 @@ export const GET: APIRoute = async () => {
             headers: { "Content-Type": "application/json" }
         });
     } catch (error: any) {
-        console.error("Error obteniendo equipos:", error.message);
-        return new Response(JSON.stringify({ success: false, message: "Error al obtener equipos." }), {
-            status: 500,
+        console.warn("Database unavailable, serving demo teams:", error.message);
+        const equipos = getEquiposDemo(["id", "nombre_equipo", "nombre_integrante1", "estado_pago", "creado_en"]);
+        return new Response(JSON.stringify({ success: true, equipos, demo: true }), {
+            status: 200,
             headers: { "Content-Type": "application/json" }
         });
     }
