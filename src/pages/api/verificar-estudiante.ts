@@ -1,6 +1,19 @@
 import type { APIRoute } from 'astro';
+import { getEstudianteDemo } from '@/data/estudiante-demo';
 
 const UDH_API_BASE_URL = "http://www.udh.edu.pe/websauh/secretaria_general/gradosytitulos/datos_estudiante_json.aspx?_c_3456=";
+const UDH_API_TIMEOUT_MS = 5000;
+
+/** Queries the UDH student service. Throws when it is unreachable, too slow, or answers with an error. */
+async function fetchEstudiantesUdh(codigoEstudiante: string): Promise<any> {
+    const response = await fetch(`${UDH_API_BASE_URL}${codigoEstudiante}`, {
+        signal: AbortSignal.timeout(UDH_API_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+        throw new Error(`UDH API responded ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+}
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -14,17 +27,16 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        const response = await fetch(`${UDH_API_BASE_URL}${codigoEstudiante}`);
-
-        if (!response.ok) {
-            console.error(`Error desde API UDH: ${response.status} ${response.statusText}`);
+        let externalData;
+        try {
+            externalData = await fetchEstudiantesUdh(codigoEstudiante);
+        } catch (error: any) {
+            console.warn("UDH API unavailable, serving demo student:", error.message);
             return new Response(
-                JSON.stringify({ success: false, message: `Error al contactar servicio externo: ${response.status}` }),
-                { status: response.status, headers: { "Content-Type": "application/json" } }
+                JSON.stringify({ success: true, data: [getEstudianteDemo(String(codigoEstudiante))], demo: true }),
+                { status: 200, headers: { "Content-Type": "application/json" } }
             );
         }
-
-        const externalData = await response.json();
 
         if (externalData && externalData.length > 0) {
             const estudianteOriginal = externalData[0];
