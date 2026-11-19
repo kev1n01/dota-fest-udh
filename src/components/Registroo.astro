@@ -3,6 +3,8 @@ import videoBlueSrcFromComponent from "@assets/videos/file3.mp4";
 // const videoRedSrcFromComponent =
 //     "https://videos.pexels.com/video-files/2715412/2715412-uhd_2560_1440_30fps.mp4";
 import videoRedSrcFromComponent from "@assets/videos/file4.mp4";
+import posterFuego from "@assets/imgs/poster-fuego.webp";
+import posterNubes from "@assets/imgs/poster-nubes.webp";
 import pagoQrImage from "@assets/imgs/pago-qr.svg";
 import ButtonDefault from "./buttons/ButtonDefault.astro";
 import ButtonDanger from "./buttons/ButtonDanger.astro";
@@ -34,19 +36,22 @@ const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
     </script>
 
     <!-- Videos de fondo -->
+    <!-- No src: only the active theme's video is downloaded (see setupBackgroundVideo) -->
     <video
         id="registro-video-red"
-        src={videoRedSrcFromComponent}
+        data-src={videoRedSrcFromComponent}
+        poster={posterFuego.src}
+        preload="none"
         class="hidden absolute top-0 left-0 w-full h-full object-cover z-0 opacity-75 animate-fade-in"
-        autoplay
         muted
         loop
         playsinline></video>
     <video
         id="registro-video-blue"
-        src={videoBlueSrcFromComponent}
+        data-src={videoBlueSrcFromComponent}
+        poster={posterNubes.src}
+        preload="none"
         class="hidden absolute top-0 left-0 w-full h-full object-cover z-0 opacity-75 animate-fade-in"
-        autoplay
         muted
         loop
         playsinline></video>
@@ -442,6 +447,7 @@ const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
             preferredVideoId === "video-blue" ? [videoBlue, videoRed] : [videoRed, videoBlue];
         if (visible instanceof HTMLVideoElement) {
             visible.classList.remove("hidden");
+            if (!visible.getAttribute("src") && visible.dataset.src) visible.src = visible.dataset.src;
             visible.play().catch((e) => console.warn("Video play interrupted", e));
         }
         if (oculto instanceof HTMLVideoElement) {

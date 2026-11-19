@@ -1,8 +1,31 @@
 <script setup>
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import Title from "@/components/vue/Title.vue";
 import FloatingCard from "@/components/vue/FloatingCard.vue";
 import dotaaegis from "@/assets/videos/dota.mp4";
+import posterEquipos from "@/assets/imgs/poster-equipos.webp";
 import { getEquiposDemo } from "@/data/equipos-demo";
+
+// The section is far below the fold: download its video only when it gets close.
+const videoRef = ref(null);
+let observer;
+
+onMounted(() => {
+  const video = videoRef.value;
+  if (!video) return;
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      video.src = dotaaegis;
+      video.play().catch(() => {});
+      observer.disconnect();
+    },
+    { rootMargin: "300px 0px" },
+  );
+  observer.observe(video);
+});
+
+onBeforeUnmount(() => observer?.disconnect());
 
 // Static site: teams come from the demo JSON and are rendered at build time.
 const equiposVerificados = getEquiposDemo([
@@ -32,7 +55,10 @@ const formatFecha = (fecha) => {
     :class="[equiposVerificados.length > 0 ? 'h-auto' : 'h-full']"
   >
     <video
-      :src="dotaaegis"
+      ref="videoRef"
+      :poster="posterEquipos.src"
+      preload="none"
+      playsinline
       class="absolute top-0 left-0 w-full h-full object-cover sm:opacity-85 opacity-40 z-0 pointer-events-none select-none"
       style="
         -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%, black 50%, transparent 100%);

@@ -4,6 +4,8 @@ import logored from "@assets/imgs/logo_3d_red.png";
 import logoblue from "@assets/imgs/logo_3d_blue.png";
 import videoBlue from "@assets/videos/file3.mp4";
 import videoRed from "@assets/videos/file4.mp4";
+import posterFuego from "@assets/imgs/poster-fuego.webp";
+import posterNubes from "@assets/imgs/poster-nubes.webp";
 import ButtonDanger from "@components/buttons/ButtonDanger.astro";
 import Sidebar from "@components/Sidebar.astro";
 import SidebarMobile from "@components/SidebarMobile.astro";
@@ -45,6 +47,14 @@ import Title from "@/components/Title.astro";
     }
   };
 
+  // Videos are rendered without a source (data-src), so only the active theme's video
+  // is downloaded; the other one loads the first time its theme is selected.
+  const playVideo = (video: HTMLVideoElement | null) => {
+    if (!video) return;
+    if (!video.getAttribute("src") && video.dataset.src) video.src = video.dataset.src;
+    video.play().catch((e) => console.warn(`Video ${video.id} play() error:`, e));
+  };
+
   const applyVideoState = (activeId: string) => {
     if (activeId === VIDEO_BLUE_ID) {
       video_red?.classList.add("hidden");
@@ -55,7 +65,7 @@ import Title from "@/components/Title.astro";
       change_btn?.classList.remove('dota-button-default')
       sectionabout?.classList.add('to-slate-800')
       sectionabout?.classList.remove('to-red-800/30')
-      video_blue?.play();
+      playVideo(video_blue);
       video_red?.pause();
     } else {
       video_red?.classList.remove("hidden");
@@ -66,9 +76,7 @@ import Title from "@/components/Title.astro";
       change_btn?.classList.add('dota-button-default')
       sectionabout?.classList.add('to-red-800/30')
       sectionabout?.classList.remove('to-slate-800')
-      video_red
-        ?.play()
-        .catch((e) => console.warn("Video rojo play() error:", e));
+      playVideo(video_red);
       video_blue?.pause();
     }
   };
@@ -140,20 +148,25 @@ import Title from "@/components/Title.astro";
   {/* Video de fondo */}
   <video
     id="video-red"
-    src={videoRed}
+    data-src={videoRed}
+    poster={posterFuego.src}
+    preload="none"
     class="absolute top-0 left-0 w-full h-full object-cover z-0 opacity-75 animate-fade-in"
     style="mask-image: linear-gradient(to bottom, black 80%, transparent);"
-    autoplay
     muted
-    loop></video>
+    loop
+    playsinline></video>
 
   <video
     id="video-blue"
-    src={videoBlue}
+    data-src={videoBlue}
+    poster={posterNubes.src}
+    preload="none"
     style="mask-image: linear-gradient(to bottom, black 80%, transparent);"
     class="hidden absolute top-0 left-0 w-full h-full object-cover z-0 opacity-75 animat-fade-in"
     muted
-    loop></video>
+    loop
+    playsinline></video>
 
   {/* Contenido encima del video */}
   <img
