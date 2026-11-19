@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import Title from "@/components/vue/Title.vue"; 
+import Title from "@/components/vue/Title.vue";
+import FloatingCard from "@/components/vue/FloatingCard.vue";
 import dotaaegis from "@/assets/videos/dota.mp4";
 
 const equipos = ref([]);
@@ -98,10 +99,14 @@ onMounted(() => {
           <!-- Lista de equipos -->
           <div v-if="!loading && !error" class="h-full">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-6 p-4">
-              <div
+              <FloatingCard
                 v-for="(equipo, index) in equiposVerificados"
                 :key="equipo.id"
-                class="bg-gradient-to-br from-black/50 to-black/20 hover:to-black/70 rounded-md overflow-hidden transition-all transform hover:scale-[101%] duration-500 w-full max-w-sm mx-auto border-transparent hover:border-blue-500/50 border"
+                class="w-full max-w-sm mx-auto"
+                radius-class="rounded-md"
+              >
+              <div
+                class="bg-gradient-to-br from-black/50 to-black/20 hover:to-black/70 rounded-md overflow-hidden transition-colors duration-500 border-transparent hover:border-blue-500/50 border"
               >
                 <div class="relative">
                   <img src="/aegis.png" alt="Imagen del equipo" class="w-full h-auto object-contain" />
@@ -127,6 +132,7 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+              </FloatingCard>
             </div>
 
             <!-- Si no hay equipos registrados -->
