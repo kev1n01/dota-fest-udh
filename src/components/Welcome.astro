@@ -108,10 +108,11 @@ import Title from "@/components/Title.astro";
   });
 </script>
 
-<section
-  id="inicio"
-  class="h-dvh bg-black text-white flex flex-col items-center justify-center gap-4 relative overflow-hidden font-aminute"
->
+{/*
+  Fixed overlays live outside the section: the home sections are sticky (stack effect),
+  and a sticky section creates a stacking context that would trap them under later sections.
+*/}
+<div class="text-white font-aminute">
   {/* Button change mode video */}
   <div
     id="change-mode-video"
@@ -130,7 +131,12 @@ import Title from "@/components/Title.astro";
 
   {/* Sidebar */}
   <Sidebar />
+</div>
 
+<section
+  id="inicio"
+  class="h-dvh bg-black text-white flex flex-col items-center justify-center gap-4 relative overflow-hidden font-aminute"
+>
   {/* Video de fondo */}
   <video
     id="video-red"
@@ -177,11 +183,6 @@ import Title from "@/components/Title.astro";
   />
   
   {/* Logo and presentation */}
-  <div class="z-10 text-3xl sm:text-5xl font-aminute uppercase tracking-widest animate-fade-in animate-duration-[1000ms] font-bold text-center">
-    próximamente
-    <p class="text-xl tracking-wide capitalize">Más información: 917279078</p>
-  </div>
-
   <div class="z-10 flex flex-col items-center gap-4">
     <img
       id="logo-red"

@@ -3,17 +3,36 @@ import videoBlueSrcFromComponent from "@assets/videos/file3.mp4";
 // const videoRedSrcFromComponent =
 //     "https://videos.pexels.com/video-files/2715412/2715412-uhd_2560_1440_30fps.mp4";
 import videoRedSrcFromComponent from "@assets/videos/file4.mp4";
-import yapeQrImage from "@assets/imgs/yape_qr.jpeg";
+import pagoQrImage from "@assets/imgs/pago-qr.svg";
 import ButtonDefault from "./buttons/ButtonDefault.astro";
 import ButtonDanger from "./buttons/ButtonDanger.astro";
 import RefDanger from "./buttons/RefDanger.astro";
 import Title from "./Title.astro";
+import DigitCodeInput from "./DigitCodeInput.astro";
+import { CODIGOS_DEMO, NOMBRE_EQUIPO_DEMO } from "@/data/estudiante-demo";
+
+// Prefilled with a fictional demo team so the flow can be tried without typing.
+const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
+    numero,
+    rol: numero === 1 ? "Capitán" : `Integrante ${numero}`,
+    codigoDemo: CODIGOS_DEMO[numero - 1],
+}));
 ---
 
 <div
-    class="h-dvh bg-black text-white flex flex-col items-center justify-center relative overflow-hidden font-aminute"
+    class="registro-root h-dvh bg-black text-white flex flex-col items-center justify-center relative overflow-hidden font-aminute"
+    data-theme="red"
     transition:animate="fade"
 >
+    <script is:inline>
+        // Apply the theme chosen on the home page ("Cambiar tema") before the form paints.
+        try {
+            if (localStorage.getItem("activeVideoTheme") === "video-blue") {
+                document.currentScript.parentElement.dataset.theme = "blue";
+            }
+        } catch (e) {}
+    </script>
+
     <!-- Videos de fondo -->
     <video
         id="registro-video-red"
@@ -36,7 +55,7 @@ import Title from "./Title.astro";
     <div
         class="relative z-10 flex flex-col items-center text-center p-4 w-full max-w-2xl max-h-[90vh]"
     >
-        <div class="flex-col sm:flex-row flex justify-center items-center sm:justify-between gap-2 mb-10 w-full">
+        <div class="flex-col sm:flex-row flex justify-center items-center sm:justify-between gap-2 mb-6 w-full">
           <RefDanger idbtn="back" to="/" className="!rounded-sm !px-4 !py-2 !text-center font-aminute animate-blurred-fade-in" label="Volver" />
           <Title
             className="!text-3xl sm:!text-4xl !animate-blurred-fade-in"
@@ -45,340 +64,190 @@ import Title from "./Title.astro";
           <div class="hidden sm:block"></div>
         </div>
 
+        <!-- Indicador de pasos -->
+        <ol
+            class="flex items-center w-full max-w-sm mb-6 text-xs sm:text-sm uppercase tracking-widest"
+            aria-label="Pasos del registro"
+        >
+            <li class="step-indicator flex items-center gap-2" data-step-indicator="1">
+                <span class="step-dot">1</span>
+                <span>Equipo</span>
+            </li>
+            <li class="flex-1 h-px mx-3 bg-white/25" aria-hidden="true"></li>
+            <li class="step-indicator flex items-center gap-2" data-step-indicator="2">
+                <span class="step-dot">2</span>
+                <span>Pago</span>
+            </li>
+        </ol>
+
         <form
             id="formRegistroEquipo"
+            novalidate
             class="w-full max-w-2xl bg-black/50 p-6 md:p-8 rounded-lg shadow-xl flex flex-col max-h-[calc(80vh-55px)] backdrop-blur-md animate-zoom-in"
         >
-            <div
-                class="flex-grow overflow-y-auto pr-2 space-y-6 custom-scrollbar-container"
-            >
-                <!-- Nombre del Equipo -->
-                <div>
-                    <label
-                        for="nombreEquipo"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Nombre del Equipo:
-                    </label>
-                    <input
-                        type="text"
-                        id="nombreEquipo"
-                        name="nombreEquipo"
-                        class="w-full p-3 ml-1 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                        required
-                    />
-                </div>
-
-                <h2 class="text-2xl mt-6 mb-2">Integrantes del Equipo</h2>
-                <p class="mb-4 text-sm">
-                    Escribe el código de estudiante de tus compañeros de equipo.
-                    Los datos se cargarán automáticamente.
-                </p>
-
-                <!-- Integrante 1 (Capitán) -->
-                <div class="p-4 border border-white/20 rounded-md">
-                    <label
-                        for="codigoIntegrante1"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Código Estudiante (Capitán):
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="text"
-                            id="codigoIntegrante1"
-                            name="codigoIntegrante1"
-                            class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                            required
-                            placeholder="Ej: 2018000000"
-                            maxlength="10"
-                            minlength="10"
-                            title="El código debe tener 10 dígitos numéricos"
-                            data-integrante-index="1"
-                        />
-                        <button
-                            type="button"
-                            class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-                            data-integrante-index="1"
-                        >
-                            Verificar
-                        </button>
-                    </div>
-                    <div
-                        id="datosIntegrante1"
-                        class="text-left mt-2 text-sm text-gray-300 min-h-[40px]"
-                    >
-                    </div>
-                    <input
-                        type="hidden"
-                        name="nombreIntegrante1"
-                        id="nombreIntegrante1"
-                    />
-                    <input
-                        type="hidden"
-                        name="programaIntegrante1"
-                        id="programaIntegrante1"
-                    />
-                </div>
-
-                <!-- Integrante 2 -->
-                <div class="p-4 border border-white/20 rounded-md">
-                    <label
-                        for="codigoIntegrante2"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Código Estudiante (Integrante 2):
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="text"
-                            id="codigoIntegrante2"
-                            name="codigoIntegrante2"
-                            class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                            required
-                            placeholder="Ej: 2018000000"
-                            maxlength="10"
-                            minlength="10"
-                            title="El código debe tener 10 dígitos numéricos"
-                            data-integrante-index="2"
-                        />
-                        <button
-                            type="button"
-                            class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-                            data-integrante-index="2"
-                        >
-                            Verificar
-                        </button>
-                    </div>
-                    <div
-                        id="datosIntegrante2"
-                        class="text-left mt-2 text-sm text-gray-300 min-h-[40px]"
-                    >
-                    </div>
-                    <input
-                        type="hidden"
-                        name="nombreIntegrante2"
-                        id="nombreIntegrante2"
-                    />
-                    <input
-                        type="hidden"
-                        name="programaIntegrante2"
-                        id="programaIntegrante2"
-                    />
-                </div>
-
-                <!-- Integrante 3 -->
-                <div class="p-4 border border-white/20 rounded-md">
-                    <label
-                        for="codigoIntegrante3"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Código Estudiante (Integrante 3):
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="text"
-                            id="codigoIntegrante3"
-                            name="codigoIntegrante3"
-                            class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                            required
-                            placeholder="Ej: 2018000000"
-                            maxlength="10"
-                            minlength="10"
-                            title="El código debe tener 10 dígitos numéricos"
-                            data-integrante-index="3"
-                        />
-                        <button
-                            type="button"
-                            class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-                            data-integrante-index="3"
-                        >
-                            Verificar
-                        </button>
-                    </div>
-                    <div
-                        id="datosIntegrante3"
-                        class="text-left mt-2 text-sm text-gray-300 min-h-[40px]"
-                    >
-                    </div>
-                    <input
-                        type="hidden"
-                        name="nombreIntegrante3"
-                        id="nombreIntegrante3"
-                    />
-                    <input
-                        type="hidden"
-                        name="programaIntegrante3"
-                        id="programaIntegrante3"
-                    />
-                </div>
-
-                <!-- Integrante 4 -->
-                <div class="p-4 border border-white/20 rounded-md">
-                    <label
-                        for="codigoIntegrante4"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Código Estudiante (Integrante 4):
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="text"
-                            id="codigoIntegrante4"
-                            name="codigoIntegrante4"
-                            class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                            required
-                            placeholder="Ej: 2018000000"
-                            maxlength="10"
-                            minlength="10"
-                            title="El código debe tener 10 dígitos numéricos"
-                            data-integrante-index="4"
-                        />
-                        <button
-                            type="button"
-                            class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-                            data-integrante-index="4"
-                        >
-                            Verificar
-                        </button>
-                    </div>
-                    <div
-                        id="datosIntegrante4"
-                        class="text-left mt-2 text-sm text-gray-300 min-h-[40px]"
-                    >
-                    </div>
-                    <input
-                        type="hidden"
-                        name="nombreIntegrante4"
-                        id="nombreIntegrante4"
-                    />
-                    <input
-                        type="hidden"
-                        name="programaIntegrante4"
-                        id="programaIntegrante4"
-                    />
-                </div>
-
-                <!-- Integrante 5 -->
-                <div class="p-4 border border-white/20 rounded-md">
-                    <label
-                        for="codigoIntegrante5"
-                        class="block text-left text-lg mb-2"
-                    >
-                        Código Estudiante (Integrante 5):
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="text"
-                            id="codigoIntegrante5"
-                            name="codigoIntegrante5"
-                            class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
-                            required
-                            placeholder="Ej: 2018000000"
-                            maxlength="10"
-                            minlength="10"
-                            title="El código debe tener 10 dígitos numéricos"
-                            data-integrante-index="5"
-                        />
-                        <button
-                            type="button"
-                            class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-                            data-integrante-index="5"
-                        >
-                            Verificar
-                        </button>
-                    </div>
-                    <div
-                        id="datosIntegrante5"
-                        class="text-left mt-2 text-sm text-gray-300 min-h-[40px]"
-                    >
-                    </div>
-                    <input
-                        type="hidden"
-                        name="nombreIntegrante5"
-                        id="nombreIntegrante5"
-                    />
-                    <input
-                        type="hidden"
-                        name="programaIntegrante5"
-                        id="programaIntegrante5"
-                    />
-                </div>
-            </div>
-
-            <div class="mt-auto pt-8">
-                <!-- <button
-                    type="submit"
-                    class="w-full bg-red-600 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg text-xl transition-colors duration-300"
+            <!-- Paso 1: datos del equipo -->
+            <section data-step="1" class="flex flex-col min-h-0 flex-1">
+                <div
+                    class="flex-grow min-h-0 overflow-y-auto pr-2 space-y-6 custom-scrollbar-container"
                 >
-                    Registrar Equipo
-                </button> -->
-                <ButtonDanger type="submit" label="Registrar Equipo" />
-            </div>
+                    <div>
+                        <label
+                            for="nombreEquipo"
+                            class="block text-left text-lg mb-2"
+                        >
+                            Nombre del Equipo:
+                        </label>
+                        <input
+                            type="text"
+                            id="nombreEquipo"
+                            name="nombreEquipo"
+                            value={NOMBRE_EQUIPO_DEMO}
+                            autocomplete="off"
+                            class="w-full p-3 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
+                        />
+                        <p id="errorNombreEquipo" class="field-error" role="alert"></p>
+                    </div>
+
+                    <h2 class="text-2xl mt-6 mb-2">Integrantes del Equipo</h2>
+                    <p class="mb-4 text-sm">
+                        Escribe el código de estudiante de cada integrante y
+                        presiona Verificar. Los datos se cargarán
+                        automáticamente.
+                    </p>
+
+                    {
+                        integrantes.map(({ numero, rol, codigoDemo }) => (
+                            <div
+                                class="integrante-card p-4 border border-white/20 rounded-md transition-colors"
+                                data-integrante={numero}
+                            >
+                                <label
+                                    for={`codigoIntegrante${numero}`}
+                                    class="block text-left text-lg mb-2"
+                                >
+                                    Código Estudiante ({rol}):
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        id={`codigoIntegrante${numero}`}
+                                        name={`codigoIntegrante${numero}`}
+                                        value={codigoDemo}
+                                        inputmode="numeric"
+                                        autocomplete="off"
+                                        maxlength="10"
+                                        placeholder="Ej: 2018000000"
+                                        class="integrante-codigo w-full p-2 rounded bg-white/20 text-white placeholder-gray-300 focus:ring-2 focus:ring-red-500 outline-none tracking-widest"
+                                        data-integrante-index={numero}
+                                    />
+                                    <button
+                                        type="button"
+                                        class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
+                                        data-integrante-index={numero}
+                                    >
+                                        Verificar
+                                    </button>
+                                </div>
+                                <p
+                                    id={`errorIntegrante${numero}`}
+                                    class="field-error"
+                                    role="alert"
+                                />
+                                <div
+                                    id={`datosIntegrante${numero}`}
+                                    class="text-left mt-2 text-sm text-gray-300"
+                                    aria-live="polite"
+                                />
+                                <input
+                                    type="hidden"
+                                    name={`nombreIntegrante${numero}`}
+                                    id={`nombreIntegrante${numero}`}
+                                />
+                                <input
+                                    type="hidden"
+                                    name={`programaIntegrante${numero}`}
+                                    id={`programaIntegrante${numero}`}
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+
+                <div class="mt-auto pt-6">
+                    <ButtonDanger type="submit" label="Continuar al pago" />
+                </div>
+            </section>
+
+            <!-- Paso 2: pago -->
+            <section data-step="2" hidden class="flex flex-col min-h-0 flex-1">
+                <div
+                    class="flex-grow min-h-0 overflow-y-auto pr-2 space-y-4 custom-scrollbar-container"
+                >
+                    <div class="text-left bg-white/5 border border-white/15 rounded-md p-4">
+                        <p class="text-xs uppercase tracking-widest text-gray-400">
+                            Equipo
+                        </p>
+                        <p id="resumenNombreEquipo" class="text-xl mb-2 break-words"></p>
+                        <ul id="resumenIntegrantes" class="text-sm text-gray-300 space-y-1"></ul>
+                    </div>
+
+                    <p>
+                        Para completar la inscripción paga <strong
+                            class="text-purple-400">S/50.00</strong
+                        > escaneando este QR:
+                    </p>
+                    <img
+                        src={pagoQrImage.src}
+                        width="220"
+                        height="250"
+                        alt="QR de pago a nombre de Kevin Arnold Flores Pacheco"
+                        class="mx-auto w-52 sm:w-56 h-auto rounded-2xl"
+                    />
+                    <p>
+                        Luego ingresa el <strong class="text-yellow-400"
+                            >código de aprobación</strong
+                        > de Yape (6 dígitos):
+                    </p>
+                    <DigitCodeInput
+                        id="codigoAprobacionYape"
+                        name="codigoOperacionYape"
+                        label="Código de aprobación"
+                    />
+                    <p id="errorPago" class="field-error !text-center" role="alert"></p>
+                </div>
+
+                <div class="mt-auto pt-6 flex flex-col-reverse sm:flex-row gap-3">
+                    <ButtonDefault type="button" idbtn="volverPasoEquipoBtn" label="Atrás" />
+                    <ButtonDanger type="submit" idbtn="confirmarPagoBtn" label="Confirmar pago" />
+                </div>
+            </section>
+
+            <!-- Registro enviado -->
+            <section
+                data-step="3"
+                hidden
+                class="flex flex-col items-center justify-center gap-4 py-6 flex-1"
+            >
+                <div
+                    class="size-16 rounded-full bg-green-500/20 border border-green-400/50 flex items-center justify-center text-3xl text-green-400"
+                    aria-hidden="true"
+                >
+                    ✓
+                </div>
+                <h2 class="text-2xl">¡Inscripción enviada!</h2>
+                <p id="mensajeExito" class="text-gray-300 max-w-md"></p>
+                <div class="w-full max-w-xs pt-2">
+                    <ButtonDanger type="button" idbtn="registrarOtroBtn" label="Registrar otro equipo" />
+                </div>
+            </section>
         </form>
-        <div id="mensajeRespuestaRegistro" class="mt-4 text-sm md:text-base font-semibold">
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Pago Yape -->
-<div
-    id="yapeModal"
-    class="hidden fixed inset-0 flex items-center justify-center z-50 p-4 bg-opacity-10 backdrop-blur-sm"
->
-    <div
-        class="bg-gray-900 bg-opacity-70 p-6 md:p-8 rounded-lg shadow-xl w-full max-w-md text-center"
-    >
-        <h3 class="text-2xl font-bold mb-4 font-alifira text-white">
-            Confirma tu Pago
-        </h3>
-        <p class="mb-2 text-white">
-            Para completar la inscripción de tu equipo, por favor paga <strong
-                class="text-purple-400">S/50.00</strong
-            >
-        </p>
-        <img
-            src={yapeQrImage.src}
-            alt="Código QR Yape"
-            class="mx-auto mb-4 w-70 h-78 border-2 border-gray-600 rounded-md"
-        />
-        <p class="mb-2 text-white">
-            Luego ingresa el <strong class="text-yellow-400"
-                >Nro. de operación</strong
-            >:
-        </p>
-        <input
-            type="text"
-            id="codigoOperacionYape"
-            name="codigoOperacionYape"
-            class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 outline-none"
-            placeholder="Ej: 12345678"
-            required
-        />
-        <div class="flex flex-col sm:flex-row gap-3">
-            <button
-                type="button"
-                id="confirmarPagoBtn"
-                class="verificar-codigo-btn verificar-button-dota-style flex-shrink-0"
-            >
-                Confirmar Pago
-            </button>
-            <!-- <button
-                type="button"
-                id="cerrarModalBtn"
-                class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-colors duration-300"
-            >
-                Cancelar
-            </button> -->
-            
-            <ButtonDefault idbtn="cerrarModalBtn" label="Cancelar"/>
-
-        </div>
-        <p
-            id="modalErrorMessage"
-            class="text-red-400 mt-3 text-sm sm:text-base min-h-[20px] font-semibold"
+        <div
+            id="mensajeRespuestaRegistro"
+            class="mt-4 text-sm md:text-base font-semibold"
+            role="status"
+            aria-live="polite"
         >
-        </p>
+        </div>
     </div>
 </div>
 
@@ -438,288 +307,393 @@ import Title from "./Title.astro";
         border-color: #501f18;
         transform: translateY(1px);
     }
+
+    .field-error {
+        margin-top: 0.5rem;
+        color: #f87171;
+        font-size: 0.875rem;
+        text-align: left;
+    }
+    .field-error:empty {
+        display: none;
+    }
+
+    .integrante-card[data-verified] {
+        border-color: rgba(74, 222, 128, 0.45);
+    }
+    .integrante-card[data-invalid] {
+        border-color: rgba(248, 113, 113, 0.75);
+    }
+
+    .step-indicator {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .step-dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        font-size: 0.8rem;
+    }
+    .step-indicator[data-state="active"] {
+        color: white;
+    }
+    .step-indicator[data-state="active"] .step-dot {
+        background: linear-gradient(to bottom, #6b211c, #8e2b19);
+        border-color: #bc4539;
+    }
+    .step-indicator[data-state="done"] {
+        color: #4ade80;
+    }
+    .step-indicator[data-state="done"] .step-dot {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: rgba(74, 222, 128, 0.6);
+    }
+
+    :global(#confirmarPagoBtn:disabled) {
+        opacity: 0.6;
+        cursor: progress;
+    }
+</style>
+
+<style is:global>
+    /* Blue (clouds) theme: steel-blue accents instead of the fire-red ones. */
+    .registro-root[data-theme="blue"] :is(.dota-button-danger, .verificar-button-dota-style) {
+        background: linear-gradient(to bottom, #1f3a5a, #2e5580);
+        border-color: #4f7cac;
+    }
+    .registro-root[data-theme="blue"] :is(.dota-button-danger, .verificar-button-dota-style):active {
+        border-color: #14263b;
+    }
+    .registro-root[data-theme="blue"] .step-indicator[data-step-indicator][data-state="active"] .step-dot {
+        background: linear-gradient(to bottom, #1f3a5a, #2e5580);
+        border-color: #4f7cac;
+    }
+    .registro-root[data-theme="blue"] input:focus {
+        --tw-ring-color: rgb(91 143 199 / 0.7);
+        border-color: #5b8fc7;
+    }
+    .registro-root[data-theme="blue"] .digit-code-box {
+        caret-color: #5b8fc7;
+    }
+    .registro-root[data-theme="blue"] .custom-scrollbar-container {
+        scrollbar-color: rgba(91, 143, 199, 0.7) rgba(255, 255, 255, 0.1);
+    }
+    .registro-root[data-theme="blue"] .custom-scrollbar-container::-webkit-scrollbar-thumb {
+        background: rgba(91, 143, 199, 0.7);
+    }
 </style>
 
 <script>
+    import { getEstudianteDemo } from "@/data/estudiante-demo";
+
+    const CODIGO_ESTUDIANTE = /^\d{10}$/;
+    const CODIGO_APROBACION = /^\d{6}$/;
+    const NUMEROS_INTEGRANTES = [1, 2, 3, 4, 5];
+    // Short pause so the "verifying" / "processing" states are visible in the demo.
+    const DEMORA_SIMULADA_MS = 400;
+
+    const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    function setupBackgroundVideo() {
+        const videoRed = document.querySelector("#registro-video-red");
+        const videoBlue = document.querySelector("#registro-video-blue");
+
+        // Preferencia guardada por Welcome.astro
+        let preferredVideoId = "video-red";
+        try {
+            preferredVideoId = localStorage.getItem("activeVideoTheme") || preferredVideoId;
+        } catch (e) {
+            console.error("Error reading from localStorage:", e);
+        }
+
+        const [visible, oculto] =
+            preferredVideoId === "video-blue" ? [videoBlue, videoRed] : [videoRed, videoBlue];
+        if (visible instanceof HTMLVideoElement) {
+            visible.classList.remove("hidden");
+            visible.play().catch((e) => console.warn("Video play interrupted", e));
+        }
+        if (oculto instanceof HTMLVideoElement) {
+            oculto.classList.add("hidden");
+            oculto.pause();
+        }
+    }
+
     function initializeRegistro() {
- // 1) Seleccionar ambos videos POR SU ID EXACTO
- const videoRedRegistro = document.querySelector("#registro-video-red");
-        const videoBlueRegistro = document.querySelector(
-            "#registro-video-blue",
-        );
+        const form = document.getElementById("formRegistroEquipo");
+        if (!(form instanceof HTMLFormElement) || form.dataset.ready) return;
+        form.dataset.ready = "true";
 
-        // 2) Obtener elementos del formulario y del mensaje
-        const formRegistro = document.getElementById("formRegistroEquipo");
-        const mensajeRespuesta = document.getElementById(
-            "mensajeRespuestaRegistro",
-        );
+        setupBackgroundVideo();
 
-        // 3) Referencias al modal y sus controles
-        const yapeModal = document.getElementById("yapeModal");
-        const codigoOperacionYapeInput = document.getElementById(
-            "codigoOperacionYape",
-        );
-        const confirmarPagoBtn = document.getElementById("confirmarPagoBtn");
-        const cerrarModalBtn = document.getElementById("cerrarModalBtn");
-        const modalErrorMessage = document.getElementById("modalErrorMessage");
+        const byId = <T extends HTMLElement = HTMLElement>(id: string) =>
+            document.getElementById(id) as T | null;
 
-        // 4) Claves para video preferido (de Welcome.astro)
-        const LOCAL_STORAGE_KEY_REGISTRO = "activeVideoTheme";
-        // **Estos valores DEBEN ser iguales a los IDs reales de tus <video>**
-        const VIDEO_RED_ID_REGISTRO = "video-red";
-        const VIDEO_BLUE_ID_REGISTRO = "video-blue";
+        const mensaje = byId("mensajeRespuestaRegistro");
+        const nombreEquipoInput = byId<HTMLInputElement>("nombreEquipo");
+        const errorNombreEquipo = byId("errorNombreEquipo");
+        const codigoAprobacionInput = byId<HTMLInputElement>("codigoAprobacionYape");
+        const errorPago = byId("errorPago");
+        const confirmarPagoBtn = byId<HTMLButtonElement>("confirmarPagoBtn");
+        const pasos = form.querySelectorAll<HTMLElement>("[data-step]");
+        const indicadores = document.querySelectorAll<HTMLElement>("[data-step-indicator]");
 
-        function getActiveVideoPreference() {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEY_REGISTRO);
-            } catch (e) {
-                console.error("Error reading from localStorage:", e);
-                return VIDEO_RED_ID_REGISTRO;
-            }
+        let pasoActual = 1;
+        let enviando = false;
+
+        function mostrarMensaje(texto: string, tipo: "info" | "error" = "info") {
+            if (!mensaje) return;
+            mensaje.textContent = texto;
+            mensaje.className = `mt-4 text-sm md:text-base font-semibold ${
+                tipo === "error" ? "text-red-400" : "text-yellow-400"
+            }`;
         }
 
-        const preferredVideoId =
-            getActiveVideoPreference() || VIDEO_RED_ID_REGISTRO;
-
-        // 5) Mostrar/ocultar según la preferencia
-        if (preferredVideoId === VIDEO_BLUE_ID_REGISTRO) {
-            if (videoBlueRegistro instanceof HTMLVideoElement) {
-                videoBlueRegistro.classList.remove("hidden");
-                videoBlueRegistro
-                    .play()
-                    .catch((e) =>
-                        console.warn("Blue video play interrupted", e),
-                    );
-            }
-            if (videoRedRegistro instanceof HTMLVideoElement) {
-                videoRedRegistro.classList.add("hidden");
-                videoRedRegistro.pause();
-            }
-        } else {
-            if (videoRedRegistro instanceof HTMLVideoElement) {
-                videoRedRegistro.classList.remove("hidden");
-                videoRedRegistro
-                    .play()
-                    .catch((e) =>
-                        console.warn("Red video play interrupted", e),
-                    );
-            }
-            if (videoBlueRegistro instanceof HTMLVideoElement) {
-                videoBlueRegistro.classList.add("hidden");
-                videoBlueRegistro.pause();
-            }
+        function integrante(n: number) {
+            return {
+                card: form!.querySelector<HTMLElement>(`[data-integrante="${n}"]`),
+                codigo: byId<HTMLInputElement>(`codigoIntegrante${n}`),
+                nombre: byId<HTMLInputElement>(`nombreIntegrante${n}`),
+                programa: byId<HTMLInputElement>(`programaIntegrante${n}`),
+                datos: byId(`datosIntegrante${n}`),
+                error: byId(`errorIntegrante${n}`),
+            };
         }
 
-        // 6) Funciones para mostrar/ocultar modal
-        function mostrarModal() {
-            if (yapeModal) yapeModal.classList.remove("hidden");
-            if (modalErrorMessage) modalErrorMessage.textContent = "";
-        }
-        function ocultarModal() {
-            if (yapeModal) yapeModal.classList.add("hidden");
-        }
-        if (cerrarModalBtn) {
-            cerrarModalBtn.addEventListener("click", () => {
-                ocultarModal();
-            });
+        function linea(texto: string, clase = "") {
+            const p = document.createElement("p");
+            p.className = clase;
+            p.textContent = texto;
+            return p;
         }
 
-        // 7) Lógica de “Verificar código de integrante”
-        const verificarCodigoBtns = document.querySelectorAll(
-            ".verificar-codigo-btn",
-        );
-        async function fetchEstudianteData(codigoEstudiante, integranteIndex) {
-            const datosDiv = document.getElementById(
-                `datosIntegrante${integranteIndex}`,
-            );
-            const nombreInput = document.getElementById(
-                `nombreIntegrante${integranteIndex}`,
-            );
-            const programaInput = document.getElementById(
-                `programaIntegrante${integranteIndex}`,
-            );
-            if (!datosDiv || !nombreInput || !programaInput) return;
-
-            datosDiv.innerHTML =
-                '<p class="text-yellow-400">Verificando código...</p>';
-            nombreInput.value = "";
-            programaInput.value = "";
-
-            try {
-                const response = await fetch("/api/verificar-estudiante", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ codigoEstudiante }),
-                });
-                if (!response.ok) {
-                    let errorData = null;
-                    try {
-                        errorData = await response.json();
-                    } catch {}
-                    throw new Error(
-                        errorData?.message ||
-                            `Error de red: ${response.status}`,
-                    );
-                }
-                const result = await response.json();
-                if (result.success && result.data && result.data.length > 0) {
-                    const estudiante = result.data[0];
-                    const nombreCompleto =
-                        `${estudiante.stu_nombres || ""} ${estudiante.stu_apellido_paterno || ""} ${estudiante.stu_apellido_materno || ""}`.trim();
-                    datosDiv.innerHTML = `
-            <p><strong>Nombre:</strong> ${nombreCompleto}</p>
-            <p><strong>Programa:</strong> ${estudiante.stu_programa || "No disponible"}</p>
-            <p class="text-green-400">✓ Datos cargados.</p>
-          `;
-                    nombreInput.value = nombreCompleto;
-                    programaInput.value = estudiante.stu_programa || "";
-                } else {
-                    datosDiv.innerHTML = `<p class="text-red-400">${result.message || "Código no encontrado."}</p>`;
-                }
-            } catch (error) {
-                console.error("Error fetching student data:", error);
-                datosDiv.innerHTML = `<p class="text-red-400">Error al verificar, intenta de nuevo.</p>`;
-            }
+        function campo(etiqueta: string, valor: string) {
+            const p = document.createElement("p");
+            const strong = document.createElement("strong");
+            strong.textContent = `${etiqueta}: `;
+            p.append(strong, valor);
+            return p;
         }
-        verificarCodigoBtns.forEach((button) => {
-            button.addEventListener("click", (event) => {
-                const targetButton = event.currentTarget;
-                const integranteIndex = targetButton.getAttribute(
-                    "data-integrante-index",
-                );
-                if (!integranteIndex) return;
-                const codigoInput = document.getElementById(
-                    `codigoIntegrante${integranteIndex}`,
-                );
-                const datosDiv = document.getElementById(
-                    `datosIntegrante${integranteIndex}`,
-                );
-                if (!codigoInput) return;
-                const codigo = codigoInput.value.trim();
-                if (!codigo) {
-                    if (datosDiv) {
-                        datosDiv.innerHTML =
-                            '<p class="text-yellow-400">Por favor, ingresa un código.</p>';
-                    }
-                    return;
-                }
-                fetchEstudianteData(codigo, integranteIndex);
-            });
-        });
 
-        // 8) Al presionar “Registrar Equipo” → MOSTRAR modal antes de enviar
-        let datosFormularioAntesDePago = null;
-        formRegistro?.addEventListener("submit", (event) => {
-            event.preventDefault();
-            if (mensajeRespuesta) {
-                mensajeRespuesta.textContent = "Validando datos...";
-                mensajeRespuesta.className = "mt-4 text-yellow-400";
-            }
+        // Hidden inputs are not cleared by form.reset(), so verification data is cleared explicitly.
+        function limpiarVerificacion(n: number) {
+            const { card, nombre, programa, datos } = integrante(n);
+            if (nombre) nombre.value = "";
+            if (programa) programa.value = "";
+            datos?.replaceChildren();
+            card?.removeAttribute("data-verified");
+        }
 
-            // Recolectar todos los campos del form
-            const formData = new FormData(formRegistro);
-            const dataObj = Object.fromEntries(formData.entries());
+        function setErrorIntegrante(n: number, texto: string) {
+            const { card, error } = integrante(n);
+            if (error) error.textContent = texto;
+            card?.toggleAttribute("data-invalid", Boolean(texto));
+        }
 
-            // Validación mínima: nombre del equipo
-            const nombreEquipoInput = document.getElementById("nombreEquipo");
-            if (!nombreEquipoInput || !nombreEquipoInput.value.trim()) {
-                if (mensajeRespuesta) {
-                    mensajeRespuesta.textContent =
-                        "Por favor, ingresa el nombre del equipo.";
-                    mensajeRespuesta.className = "mt-4 text-red-400";
-                }
-                nombreEquipoInput?.focus();
+        function estaVerificado(n: number) {
+            const { nombre, programa } = integrante(n);
+            return Boolean(nombre?.value && programa?.value);
+        }
+
+        async function verificarIntegrante(n: number) {
+            const { card, codigo, nombre, programa, datos } = integrante(n);
+            if (!codigo || !nombre || !programa) return;
+
+            const valor = codigo.value.trim();
+            limpiarVerificacion(n);
+            if (!CODIGO_ESTUDIANTE.test(valor)) {
+                setErrorIntegrante(n, "El código debe tener 10 dígitos numéricos.");
+                codigo.focus();
                 return;
             }
+            setErrorIntegrante(n, "");
+            datos?.replaceChildren(linea("Verificando código...", "text-yellow-400"));
 
-            // Guardar temporalmente los datos del form
-            datosFormularioAntesDePago = dataObj;
+            // Static demo: students resolve locally from fictional data; no external service is called.
+            await esperar(DEMORA_SIMULADA_MS);
+            if (codigo.value.trim() !== valor) return; // the code changed while verifying
+            const estudiante = getEstudianteDemo(valor);
 
-            // Mostrar el modal de pago
-            mostrarModal();
-        });
+            const nombreCompleto = [
+                estudiante.stu_nombres,
+                estudiante.stu_apellido_paterno,
+                estudiante.stu_apellido_materno,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+            nombre.value = nombreCompleto;
+            programa.value = estudiante.stu_programa;
+            card?.setAttribute("data-verified", valor);
+            datos?.replaceChildren(
+                campo("Nombre", nombreCompleto),
+                campo("Programa", estudiante.stu_programa),
+                linea("✓ Datos cargados.", "text-green-400"),
+            );
+        }
 
-        // 9) En el modal: “Confirmar Pago” → enviar a /api/registrar-equipo + estado “PENDIENTE_VERIFICACION”
-        confirmarPagoBtn?.addEventListener("click", async () => {
-            if (!datosFormularioAntesDePago) {
-                if (modalErrorMessage) {
-                    modalErrorMessage.textContent =
-                        "No se encontraron datos del formulario.";
-                }
-                return;
-            }
-
-            // Leer el código de operación que ingresó el usuario
-            const codigoOperacion = codigoOperacionYapeInput.value.trim();
-            if (!codigoOperacion) {
-                if (modalErrorMessage) {
-                    modalErrorMessage.textContent =
-                        "Por favor, ingresa el Código de Operación de Yape.";
-                }
-                codigoOperacionYapeInput.focus();
-                return;
-            }
-            if (modalErrorMessage) modalErrorMessage.textContent = "";
-
-            // Ocultar el modal
-            ocultarModal();
-
-            // Armar el payload final
-            const payload = {
-                ...datosFormularioAntesDePago,
-                codigoOperacionYape: codigoOperacion,
-                estadoVerificacion: "PENDIENTE_VERIFICACION",
+        // Returns the first invalid field, or null when the team step is complete.
+        function validarPasoEquipo(): HTMLElement | null {
+            let primerInvalido: HTMLElement | null = null;
+            const marcar = (elemento: HTMLElement | null) => {
+                if (!primerInvalido) primerInvalido = elemento;
             };
 
-            // Mostrar “procesando”
-            if (mensajeRespuesta) {
-                mensajeRespuesta.textContent =
-                    "Procesando registro (esperando verificación)...";
-                mensajeRespuesta.className = "mt-4 text-yellow-400";
+            const nombreEquipo = nombreEquipoInput?.value.trim() ?? "";
+            if (errorNombreEquipo) {
+                errorNombreEquipo.textContent = nombreEquipo ? "" : "Ingresa el nombre del equipo.";
             }
+            if (!nombreEquipo) marcar(nombreEquipoInput);
 
-            // Enviar al backend
+            const codigos = NUMEROS_INTEGRANTES.map((n) => integrante(n).codigo?.value.trim() ?? "");
+            NUMEROS_INTEGRANTES.forEach((n, index) => {
+                const codigo = codigos[index];
+                let error = "";
+                if (!CODIGO_ESTUDIANTE.test(codigo)) {
+                    error = "El código debe tener 10 dígitos numéricos.";
+                } else if (codigos.indexOf(codigo) !== index) {
+                    error = "Este código ya está en otro integrante.";
+                } else if (!estaVerificado(n)) {
+                    error = "Verifica este código antes de continuar.";
+                }
+                setErrorIntegrante(n, error);
+                if (error) marcar(integrante(n).codigo);
+            });
+
+            return primerInvalido;
+        }
+
+        function irAPaso(paso: number) {
+            pasoActual = paso;
+            pasos.forEach((seccion) => {
+                seccion.hidden = Number(seccion.dataset.step) !== paso;
+            });
+            indicadores.forEach((indicador) => {
+                const n = Number(indicador.dataset.stepIndicator);
+                const estado = n < paso ? "done" : n === paso ? "active" : "pending";
+                indicador.dataset.state = estado;
+                indicador.toggleAttribute("aria-current", estado === "active");
+                const dot = indicador.querySelector(".step-dot");
+                if (dot) dot.textContent = estado === "done" ? "✓" : String(n);
+            });
+        }
+
+        function renderResumen() {
+            const nombreEl = byId("resumenNombreEquipo");
+            if (nombreEl) nombreEl.textContent = nombreEquipoInput?.value.trim() ?? "";
+            byId("resumenIntegrantes")?.replaceChildren(
+                ...NUMEROS_INTEGRANTES.map((n) =>
+                    linea(`${n === 1 ? "Capitán" : `Integrante ${n}`}: ${integrante(n).nombre?.value ?? ""}`),
+                ),
+            );
+        }
+
+        function continuarAlPago() {
+            const invalido = validarPasoEquipo();
+            if (invalido) {
+                mostrarMensaje("Revisa los campos marcados antes de continuar.", "error");
+                invalido.focus();
+                invalido.scrollIntoView({ block: "center", behavior: "smooth" });
+                return;
+            }
+            mostrarMensaje("");
+            renderResumen();
+            if (errorPago) errorPago.textContent = "";
+            irAPaso(2);
+            form!.querySelector<HTMLInputElement>(".digit-code-box")?.focus();
+        }
+
+        async function confirmarPago() {
+            if (enviando) return;
+
+            const codigoAprobacion = codigoAprobacionInput?.value ?? "";
+            if (!CODIGO_APROBACION.test(codigoAprobacion)) {
+                if (errorPago) errorPago.textContent = "Ingresa los 6 dígitos del código de aprobación.";
+                Array.from(form!.querySelectorAll<HTMLInputElement>(".digit-code-box"))
+                    .find((box) => !box.value)
+                    ?.focus();
+                return;
+            }
+            if (errorPago) errorPago.textContent = "";
+
+            enviando = true;
+            if (confirmarPagoBtn) confirmarPagoBtn.disabled = true;
+            mostrarMensaje("Procesando registro...");
+
             try {
-                const response = await fetch("/api/registrar-equipo", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    if (mensajeRespuesta) {
-                        mensajeRespuesta.textContent =
-                            result.message ||
-                            "¡Registro exitoso! Pago en verificación.";
-                        mensajeRespuesta.className = "mt-4 text-green-400";
-                    }
-                    // Limpiar form
-                    formRegistro.reset();
-                    document
-                        .querySelectorAll('[id^="datosIntegrante"]')
-                        .forEach((div) => {
-                            if (div instanceof HTMLElement) div.innerHTML = "";
-                        });
-                    datosFormularioAntesDePago = null;
-                    codigoOperacionYapeInput.value = "";
-                } else {
-                    if (mensajeRespuesta) {
-                        mensajeRespuesta.textContent =
-                            result.message || "Error al registrar el equipo.";
-                        mensajeRespuesta.className = "mt-4 text-red-400";
-                    }
-                }
-            } catch (error) {
-                console.error("Error al enviar datos al servidor:", error);
-                if (mensajeRespuesta) {
-                    mensajeRespuesta.textContent =
-                        "Ocurrió un error al conectar con el servidor.";
-                    mensajeRespuesta.className = "mt-4 text-red-400";
-                }
+                // Static demo: nothing is sent or stored, the registration is simulated.
+                await esperar(DEMORA_SIMULADA_MS);
+                const exito = byId("mensajeExito");
+                if (exito) exito.textContent = "Equipo registrado exitosamente (modo demo: los datos no se guardan).";
+                mostrarMensaje("");
+                irAPaso(3);
+            } finally {
+                enviando = false;
+                if (confirmarPagoBtn) confirmarPagoBtn.disabled = false;
             }
-        });
-    }
-    document.addEventListener("DOMContentLoaded", initializeRegistro);
+        }
 
+        function reiniciarFormulario() {
+            form!.reset();
+            NUMEROS_INTEGRANTES.forEach((n) => {
+                limpiarVerificacion(n);
+                setErrorIntegrante(n, "");
+            });
+            if (errorNombreEquipo) errorNombreEquipo.textContent = "";
+            if (errorPago) errorPago.textContent = "";
+            mostrarMensaje("");
+            irAPaso(1);
+            nombreEquipoInput?.focus();
+        }
+
+        // Eventos
+        NUMEROS_INTEGRANTES.forEach((n) => {
+            const { card, codigo } = integrante(n);
+            codigo?.addEventListener("input", () => {
+                const soloDigitos = codigo.value.replace(/\D/g, "").slice(0, 10);
+                if (soloDigitos !== codigo.value) codigo.value = soloDigitos;
+                // Verified data belongs to the code it was fetched for.
+                if (card?.getAttribute("data-verified") !== soloDigitos) limpiarVerificacion(n);
+                setErrorIntegrante(n, "");
+            });
+            codigo?.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    verificarIntegrante(n);
+                }
+            });
+        });
+
+        form.querySelectorAll<HTMLButtonElement>(".verificar-codigo-btn").forEach((button) => {
+            button.addEventListener("click", () => verificarIntegrante(Number(button.dataset.integranteIndex)));
+        });
+
+        nombreEquipoInput?.addEventListener("input", () => {
+            if (errorNombreEquipo && nombreEquipoInput.value.trim()) errorNombreEquipo.textContent = "";
+        });
+
+        form.addEventListener("digit-code:change", () => {
+            if (errorPago) errorPago.textContent = "";
+        });
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            if (pasoActual === 1) continuarAlPago();
+            else if (pasoActual === 2) confirmarPago();
+        });
+
+        byId("volverPasoEquipoBtn")?.addEventListener("click", () => {
+            mostrarMensaje("");
+            irAPaso(1);
+        });
+        byId("registrarOtroBtn")?.addEventListener("click", reiniciarFormulario);
+
+        irAPaso(1);
+    }
+
+    document.addEventListener("DOMContentLoaded", initializeRegistro);
     document.addEventListener("astro:page-load", initializeRegistro);
 </script>

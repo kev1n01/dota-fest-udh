@@ -1,0 +1,104 @@
+---
+/**
+ * Home "card stack": each section sticks while the next one slides over it.
+ * Sections taller than the viewport scroll through completely before sticking
+ * (their sticky `top` is negative, so they stick bottom-aligned).
+ * Each incoming section grows into place (scale + rounded corners) via scroll-driven animations;
+ * browsers without support, or users who prefer reduced motion, get the plain stack.
+ *
+ * Stacked sections (in order): #inicio, #premio, #equipos, #thanks.
+ */
+---
+
+<main class="section-stack overflow-x-clip">
+    <slot />
+</main>
+
+<style is:global>
+    .section-stack :is(#inicio, #premio, #equipos) {
+        position: sticky;
+        top: var(--stack-top, 0px);
+    }
+
+    .section-stack :is(#premio, #equipos, #thanks) {
+        box-shadow: 0 -24px 48px rgb(0 0 0 / 0.6);
+    }
+
+    /* The last section covers the whole viewport, not just the bottom of the previous one. */
+    .section-stack #thanks {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        @supports (animation-timeline: view()) {
+            .section-stack :is(#premio, #equipos, #thanks) {
+                animation: stack-enter linear both;
+                animation-timeline: view();
+                animation-range: entry 0% entry 100%;
+                /* Scale around the visible center, so tall sections look the same as short ones. */
+                transform-origin: 50% min(50%, 50vh);
+            }
+        }
+    }
+
+    @keyframes stack-enter {
+        from {
+            transform: scale(0.88);
+            border-radius: 2.5rem;
+        }
+        to {
+            transform: none;
+            border-radius: 0;
+        }
+    }
+</style>
+
+<script>
+    function setupSectionStack() {
+        const stack = document.querySelector<HTMLElement>(".section-stack");
+        if (!stack || stack.dataset.ready) return;
+        stack.dataset.ready = "true";
+
+        const sections = Array.from(
+            stack.querySelectorAll<HTMLElement>("#inicio, #premio, #equipos, #thanks"),
+        );
+        const stickySections = sections.filter((section) => section.id !== "thanks");
+
+        // Tall sections stick once their bottom reaches the viewport bottom.
+        const updateStickyTops = () => {
+            const viewportHeight = window.innerHeight;
+            stickySections.forEach((section) => {
+                const top = Math.min(0, viewportHeight - section.offsetHeight);
+                section.style.setProperty("--stack-top", `${top}px`);
+            });
+        };
+        const resizeObserver = new ResizeObserver(updateStickyTops);
+        stickySections.forEach((section) => resizeObserver.observe(section));
+        window.addEventListener("resize", updateStickyTops);
+        updateStickyTops();
+
+        // A stuck section is already "in view", so the browser would not scroll back to it.
+        // Scroll to the section's position in the normal flow instead.
+        document.addEventListener("click", (event) => {
+            const link =
+                event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href^="#"]') : null;
+            const hash = link?.getAttribute("href");
+            const target = sections.find((section) => `#${section.id}` === hash);
+            if (!link || !hash || !target) return;
+
+            event.preventDefault();
+            let top = stack.getBoundingClientRect().top + window.scrollY;
+            for (const section of sections) {
+                if (section === target) break;
+                top += section.offsetHeight;
+            }
+            const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+            history.pushState(null, "", hash);
+        });
+    }
+
+    setupSectionStack();
+</script>

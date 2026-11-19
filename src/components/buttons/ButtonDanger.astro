@@ -1,8 +1,8 @@
 ---
-const { label, idbtn } = Astro.props;
+const { label, idbtn, type } = Astro.props;
 ---
 
-<button id={idbtn} class="dota-button-danger text-[12px] sm:text-[16px] w-full"> {label} </button>
+<button id={idbtn} type={type} class="dota-button-danger text-[12px] sm:text-[16px] w-full"> {label} </button>
 
 <style>
   .dota-button-danger {

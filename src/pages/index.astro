@@ -5,14 +5,17 @@ import Award from "@/partials/Award.astro";
 // import Teams from "@/partials/Teams.astro";
 import Teams from "@/partials/Teams.vue";
 import Thanks from "@/partials/Thanks.astro";
+import SectionStack from "@/components/SectionStack.astro";
 
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<Welcome />
-  <Award />
-  <Teams client:load />
-  <Thanks />
+  <SectionStack>
+    <Welcome />
+    <Award />
+    <Teams client:load />
+    <Thanks />
+  </SectionStack>
 </Layout>
