@@ -1,0 +1,112 @@
+---
+/**
+ * Segmented numeric code input (one box per digit).
+ * The joined value lives in a hidden input with the given `id`/`name`, so it is
+ * submitted with the surrounding form. Emits a bubbling `digit-code:change` event.
+ */
+interface Props {
+    id: string;
+    name: string;
+    length?: number;
+    label?: string;
+}
+
+const { id, name, length = 6, label = "Código" } = Astro.props;
+const boxes = Array.from({ length }, (_, index) => index);
+---
+
+<div class="flex justify-center gap-2 sm:gap-3" role="group" aria-label={label} data-digit-code>
+    {
+        boxes.map((index) => (
+            <input
+                type="text"
+                inputmode="numeric"
+                autocomplete={index === 0 ? "one-time-code" : "off"}
+                aria-label={`${label}, dígito ${index + 1} de ${length}`}
+                class="digit-code-box w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-bold rounded-md bg-white/10 border border-white/25 text-white caret-red-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/50"
+            />
+        ))
+    }
+    <input type="hidden" id={id} name={name} />
+</div>
+
+<script>
+    function setupDigitCode(group: HTMLElement) {
+        if (group.dataset.ready) return;
+        group.dataset.ready = "true";
+
+        const boxes = Array.from(group.querySelectorAll<HTMLInputElement>(".digit-code-box"));
+        const hidden = group.querySelector<HTMLInputElement>('input[type="hidden"]');
+        if (!hidden) return;
+        const values: string[] = boxes.map(() => "");
+
+        const render = () => {
+            boxes.forEach((box, index) => (box.value = values[index]));
+            hidden.value = values.join("");
+            group.dispatchEvent(
+                new CustomEvent("digit-code:change", {
+                    bubbles: true,
+                    detail: { value: hidden.value, complete: hidden.value.length === boxes.length },
+                }),
+            );
+        };
+
+        // Writes digits starting at `start` and moves focus to the next empty box.
+        const write = (start: number, digits: string) => {
+            digits
+                .slice(0, boxes.length - start)
+                .split("")
+                .forEach((digit, offset) => (values[start + offset] = digit));
+            render();
+            boxes[Math.min(start + digits.length, boxes.length - 1)].focus();
+        };
+
+        boxes.forEach((box, index) => {
+            box.addEventListener("input", (event) => {
+                const { inputType, data } = event as InputEvent;
+                if (inputType.startsWith("delete")) {
+                    values[index] = "";
+                    render();
+                    return;
+                }
+                // Typing inserts one character (event.data); autofill may insert the whole code.
+                const digits = (inputType === "insertText" && data ? data : box.value).replace(/\D/g, "");
+                if (digits) write(index, digits);
+                else render(); // reject non-digits, keep the previous value
+            });
+
+            box.addEventListener("keydown", (event) => {
+                if (event.key === "Backspace" && !values[index] && index > 0) {
+                    event.preventDefault();
+                    values[index - 1] = "";
+                    render();
+                    boxes[index - 1].focus();
+                } else if (event.key === "ArrowLeft" && index > 0) {
+                    event.preventDefault();
+                    boxes[index - 1].focus();
+                } else if (event.key === "ArrowRight" && index < boxes.length - 1) {
+                    event.preventDefault();
+                    boxes[index + 1].focus();
+                }
+            });
+
+            box.addEventListener("paste", (event) => {
+                event.preventDefault();
+                const digits = (event.clipboardData?.getData("text") ?? "").replace(/\D/g, "");
+                if (digits) write(digits.length >= boxes.length ? 0 : index, digits);
+            });
+
+            box.addEventListener("focus", () => box.select());
+        });
+
+        // Hidden inputs are not cleared by form.reset(), so clear the code explicitly.
+        group.closest("form")?.addEventListener("reset", () => {
+            queueMicrotask(() => {
+                values.fill("");
+                render();
+            });
+        });
+    }
+
+    document.querySelectorAll<HTMLElement>("[data-digit-code]").forEach(setupDigitCode);
+</script>

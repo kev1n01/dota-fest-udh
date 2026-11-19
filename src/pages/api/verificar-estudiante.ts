@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getEstudianteDemo } from '@/data/estudiante-demo';
+import { ESTUDIANTES_DEMO, getEstudianteDemo } from '@/data/estudiante-demo';
 
 const UDH_API_BASE_URL = "http://www.udh.edu.pe/websauh/secretaria_general/gradosytitulos/datos_estudiante_json.aspx?_c_3456=";
 const UDH_API_TIMEOUT_MS = 5000;
@@ -24,6 +24,15 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(
                 JSON.stringify({ success: false, message: 'Código de estudiante es requerido.' }),
                 { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
+        // Prefilled demo members are resolved locally, without calling the UDH service.
+        const estudianteDemo = ESTUDIANTES_DEMO[String(codigoEstudiante).trim()];
+        if (estudianteDemo) {
+            return new Response(
+                JSON.stringify({ success: true, data: [estudianteDemo], demo: true }),
+                { status: 200, headers: { "Content-Type": "application/json" } }
             );
         }
 
