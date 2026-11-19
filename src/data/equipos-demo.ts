@@ -3,7 +3,7 @@ import equiposDemo from "./equipos-demo.json";
 export type EquipoDemo = (typeof equiposDemo)[number];
 
 /**
- * Demo teams used when the database is unreachable.
+ * Demo teams rendered by the static site.
  * Returns only the requested columns, newest first (mirrors `ORDER BY creado_en DESC`).
  */
 export function getEquiposDemo<K extends keyof EquipoDemo>(columns: readonly K[]): Pick<EquipoDemo, K>[] {

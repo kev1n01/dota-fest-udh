@@ -1,36 +1,17 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
 import Title from "@/components/vue/Title.vue";
 import FloatingCard from "@/components/vue/FloatingCard.vue";
 import dotaaegis from "@/assets/videos/dota.mp4";
+import { getEquiposDemo } from "@/data/equipos-demo";
 
-const equipos = ref([]);
-const loading = ref(true);
-const error = ref(false);
-
-const cargarEquipos = async () => {
-  loading.value = true;
-  error.value = false;
-
-  try {
-    const res = await fetch("/api/registrar-equipo");
-    const data = await res.json();
-
-    if (!res.ok || !data.success) throw new Error(data.message || "Error");
-    // console.log("Equipos cargados:", data.equipos);
-
-    equipos.value = data.equipos || [];
-  } catch (err) {
-    console.error("Error al cargar equipos:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-};
-
-const equiposVerificados = computed(() =>
-  equipos.value.filter((e) => e.estado_pago === "VERIFICADO")
-);
+// Static site: teams come from the demo JSON and are rendered at build time.
+const equiposVerificados = getEquiposDemo([
+  "id",
+  "nombre_equipo",
+  "nombre_integrante1",
+  "estado_pago",
+  "creado_en",
+]).filter((e) => e.estado_pago === "VERIFICADO");
 
 const formatFecha = (fecha) => {
   const date = new Date(fecha);
@@ -42,13 +23,6 @@ const formatFecha = (fecha) => {
     minute: "2-digit",
   });
 };
-
-onMounted(() => {
-  cargarEquipos();
-
-  // Actualización automática opcional
-  // setInterval(cargarEquipos, 30000);
-});
 </script>
 
 <template>
@@ -82,22 +56,8 @@ onMounted(() => {
       <!-- Contenedor de equipos -->
       <div class="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-8 overflow-hidden">
         <div class="max-w-6xl mx-auto h-full">
-          <!-- Estado de carga -->
-          <div v-if="loading" class="text-center py-8">
-            <div class="inline-block animate-rotate-360 rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <p class="mt-2 text-gray-300">Cargando equipos</p>
-          </div>
-
-          <!-- Mensaje de error -->
-          <div v-if="error" class="text-center py-8">
-            <p class="text-red-400 mb-4">Error al cargar los equipos</p>
-            <button @click="cargarEquipos" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white">
-              Reintentar
-            </button>
-          </div>
-
           <!-- Lista de equipos -->
-          <div v-if="!loading && !error" class="h-full">
+          <div class="h-full">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3 gap-6 p-4">
               <FloatingCard
                 v-for="(equipo, index) in equiposVerificados"

@@ -388,9 +388,15 @@ const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
 </style>
 
 <script>
+    import { getEstudianteDemo } from "@/data/estudiante-demo";
+
     const CODIGO_ESTUDIANTE = /^\d{10}$/;
     const CODIGO_APROBACION = /^\d{6}$/;
     const NUMEROS_INTEGRANTES = [1, 2, 3, 4, 5];
+    // Short pause so the "verifying" / "processing" states are visible in the demo.
+    const DEMORA_SIMULADA_MS = 400;
+
+    const esperar = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     function setupBackgroundVideo() {
         const videoRed = document.querySelector("#registro-video-red");
@@ -506,47 +512,27 @@ const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
             setErrorIntegrante(n, "");
             datos?.replaceChildren(linea("Verificando código...", "text-yellow-400"));
 
-            try {
-                const response = await fetch("/api/verificar-estudiante", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ codigoEstudiante: valor }),
-                });
-                const result = await response.json().catch(() => null);
-                if (codigo.value.trim() !== valor) return; // the code changed while verifying
-                if (!response.ok) {
-                    throw new Error(result?.message || `Error de red: ${response.status}`);
-                }
+            // Static demo: students resolve locally from fictional data; no external service is called.
+            await esperar(DEMORA_SIMULADA_MS);
+            if (codigo.value.trim() !== valor) return; // the code changed while verifying
+            const estudiante = getEstudianteDemo(valor);
 
-                const estudiante = result?.success ? result.data?.[0] : null;
-                if (!estudiante) {
-                    datos?.replaceChildren();
-                    setErrorIntegrante(n, result?.message || "Código no encontrado.");
-                    return;
-                }
-
-                const nombreCompleto = [
-                    estudiante.stu_nombres,
-                    estudiante.stu_apellido_paterno,
-                    estudiante.stu_apellido_materno,
-                ]
-                    .filter(Boolean)
-                    .join(" ")
-                    .trim();
-                nombre.value = nombreCompleto;
-                programa.value = estudiante.stu_programa || "";
-                card?.setAttribute("data-verified", valor);
-                datos?.replaceChildren(
-                    campo("Nombre", nombreCompleto),
-                    campo("Programa", estudiante.stu_programa || "No disponible"),
-                    linea("✓ Datos cargados.", "text-green-400"),
-                );
-            } catch (error) {
-                if (codigo.value.trim() !== valor) return;
-                console.error("Error fetching student data:", error);
-                datos?.replaceChildren();
-                setErrorIntegrante(n, "Error al verificar, intenta de nuevo.");
-            }
+            const nombreCompleto = [
+                estudiante.stu_nombres,
+                estudiante.stu_apellido_paterno,
+                estudiante.stu_apellido_materno,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .trim();
+            nombre.value = nombreCompleto;
+            programa.value = estudiante.stu_programa;
+            card?.setAttribute("data-verified", valor);
+            datos?.replaceChildren(
+                campo("Nombre", nombreCompleto),
+                campo("Programa", estudiante.stu_programa),
+                linea("✓ Datos cargados.", "text-green-400"),
+            );
         }
 
         // Returns the first invalid field, or null when the team step is complete.
@@ -637,30 +623,13 @@ const integrantes = [1, 2, 3, 4, 5].map((numero) => ({
             if (confirmarPagoBtn) confirmarPagoBtn.disabled = true;
             mostrarMensaje("Procesando registro...");
 
-            const payload = {
-                ...Object.fromEntries(new FormData(form!).entries()),
-                codigoOperacionYape: codigoAprobacion,
-                estadoVerificacion: "PENDIENTE_VERIFICACION",
-            };
-
             try {
-                const response = await fetch("/api/registrar-equipo", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
-                const result = await response.json().catch(() => null);
-                if (response.ok && result?.success) {
-                    const exito = byId("mensajeExito");
-                    if (exito) exito.textContent = result.message || "¡Registro exitoso! Pago en verificación.";
-                    mostrarMensaje("");
-                    irAPaso(3);
-                } else {
-                    mostrarMensaje(result?.message || "Error al registrar el equipo.", "error");
-                }
-            } catch (error) {
-                console.error("Error al enviar datos al servidor:", error);
-                mostrarMensaje("Ocurrió un error al conectar con el servidor.", "error");
+                // Static demo: nothing is sent or stored, the registration is simulated.
+                await esperar(DEMORA_SIMULADA_MS);
+                const exito = byId("mensajeExito");
+                if (exito) exito.textContent = "Equipo registrado exitosamente (modo demo: los datos no se guardan).";
+                mostrarMensaje("");
+                irAPaso(3);
             } finally {
                 enviando = false;
                 if (confirmarPagoBtn) confirmarPagoBtn.disabled = false;

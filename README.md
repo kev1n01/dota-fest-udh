@@ -11,11 +11,23 @@ All commands are run from the root of the project, from a terminal:
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
 | `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:3011`      |
+| `npm run dev`             | Starts local dev server at `localhost:3001`      |
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 🧪 Demo mode (static site)
+
+The site is fully static (`output: 'static'`): there is no server, database or API.
+
+- Teams are read from `src/data/equipos-demo.json` at build time.
+- Registration runs in the browser: student codes resolve to fictional students
+  (`src/data/estudiante-demo.ts`) and the payment step is simulated. Nothing is sent or stored.
+- The form is prefilled with the demo team "The Couriers".
+
+Docker: `docker build -t dota-fest-udh .` and `docker run -p 3001:3001 dota-fest-udh`
+serves `dist/` with nginx on port 3001.
 
 
 ## 🚀 Project Structure
@@ -89,17 +101,17 @@ dota-fest-udh
 │   │   └── Layout.astro
 │   ├── pages
 │   │   ├── acerca.astro
-│   │   ├── api
-│   │   │   ├── registrar-equipo.ts
-│   │   │   └── verificar-estudiante.ts
 │   │   ├── index.astro
 │   │   └── registro.astro
+│   ├── data
+│   │   ├── equipos-demo.json
+│   │   ├── equipos-demo.ts
+│   │   └── estudiante-demo.ts
 │   ├── partials
 │   │   ├── AboutLTD.astro
 │   │   ├── Award.astro
-│   │   └── Teams.astro
-│   ├── styles
-│   │   └── global.css
-│   └── turso.ts
+│   │   └── Teams.vue
+│   └── styles
+│       └── global.css
 └── tsconfig.json
 ```

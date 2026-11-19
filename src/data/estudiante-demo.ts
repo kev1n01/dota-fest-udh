@@ -49,8 +49,8 @@ function hash(value: string): number {
 }
 
 /**
- * Fictional student used when the UDH student service is unreachable.
- * Mirrors the fields returned by /api/verificar-estudiante.
+ * Fictional student for any other code, so the static demo never calls an external service.
+ * Same shape as the student data shown in the registration form.
  */
 export function getEstudianteDemo(codigo: string): EstudianteDemo {
     const conocido = ESTUDIANTES_DEMO[codigo.trim()];
