@@ -1,8 +1,8 @@
 name: Desplegar a producción
+# Manual only: run it from the Actions tab ("Run workflow").
+# Note: the script below restarts a pm2 Node app; the site is now static.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
